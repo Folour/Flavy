@@ -1,12 +1,13 @@
 <?php namespace Folour\Flavy\Extensions;
 
+use Folour\Flavy\Exceptions\CmdException;
+
 /**
  *
  * @author Vadim Bova <folour@gmail.com>
  * @link   http://github.com/folour | http://vk.com/folour
  *
  */
-
 class Base extends Commands
 {
 
@@ -17,8 +18,8 @@ class Base extends Commands
      * @var array
      */
     protected $config = [
-        'ffmpeg_path'   => 'ffmpeg',
-        'ffprobe_path'  => 'ffprobe'
+        'ffmpeg_path' => 'ffmpeg',
+        'ffprobe_path' => 'ffprobe'
     ];
 
     /**
@@ -28,14 +29,14 @@ class Base extends Commands
      * @var array
      */
     private $_info = [
-        'formats'   => [],
+        'formats' => [],
 
-        'encoders'  => [
+        'encoders' => [
             'audio' => [],
             'video' => []
         ],
 
-        'decoders'  => [
+        'decoders' => [
             'audio' => [],
             'video' => []
         ]
@@ -55,13 +56,16 @@ class Base extends Commands
      *
      * Returns array of supported formats
      *
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      * @return array
      */
     public function formats()
     {
-        if($this->_info['formats'] === null) {
+        if ($this->_info['formats'] === null) {
             $data = $this->runCmd('get_formats', [$this->config['ffmpeg_path']]);
-            if(is_array($data)) {
+            if (is_array($data)) {
                 $this->_info['formats'] = array_combine($data['format'], $data['mux']);
             }
         }
@@ -77,20 +81,32 @@ class Base extends Commands
      *     'video' => []
      * ]
      *
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      * @return array
      */
     public function encoders()
     {
-        if($this->_info['encoders']['audio'] === []) {
-            $data = $this->runCmd('get_encoders', [$this->config['ffmpeg_path']]);
-            if(is_array($data)) {
-                foreach($data['type'] as $key => $type) {
-                    $this->_info['encoders'][($type == 'A' ? 'audio' : 'video')][] = $data['format'][$key];
-                }
-            }
-        }
+        return $this->_info['encoders']['audio'] === [] ? $this->infoPrepare(true) : $this->_info['encoders'];
+    }
 
-        return $this->_info['encoders'];
+    /**
+     * @param bool $encoders
+     * @return array
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
+     */
+    private function infoPrepare($encoders = false)
+    {
+        $data = $this->runCmd('get_' . ($encoders ? 'encoders' : 'decoders'), [$this->config['ffmpeg_path']]);
+        return array_map(
+            function ($key, $type) use ($data) {
+                $result = [];
+                return $result[$type === 'A' ? 'audio' : 'video'][] = $data['format'][$key];
+            }, array_keys($data['type']), $data['type']
+        );
     }
 
     /**
@@ -101,38 +117,38 @@ class Base extends Commands
      *     'video' => []
      * ]
      *
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      * @return array
      */
     public function decoders()
     {
-        if($this->_info['decoders']['audio'] === []) {
-            $data = $this->runCmd('get_decoders', [$this->config['ffmpeg_path']]);
-            if(is_array($data)) {
-                foreach($data['type'] as $key => $type) {
-                    $this->_info['decoders'][($type == 'A' ? 'audio' : 'video')][] = $data['format'][$key];
-                }
-            }
-        }
-
-        return $this->_info['decoders'];
+        return $this->_info['decoders']['audio'] === [] ? $this->infoPrepare(false) : $this->_info['decoders'];
     }
 
     /**
      * @param string $format
      * @return bool
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      */
-    public function canEncode($format)
+    public function canEncode($format = 'encoder')
     {
-        return in_array($format, array_flatten($this->encoders()));
+        return in_array($format, array_flatten($this->encoders()), true);
     }
 
     /**
      * @param string $format
      * @return bool
+     * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      */
-    public function canDecode($format)
+    public function canDecode($format = 'decoder')
     {
-        return in_array($format, array_flatten($this->decoders()));
+        return in_array($format, array_flatten($this->decoders()), true);
     }
 
     //Helpers
@@ -144,10 +160,10 @@ class Base extends Commands
      */
     protected function timestamp($time, $isDate = true)
     {
-        if($isDate) {
+        if ($isDate) {
             $time = explode(':', $time);
 
-            return ($time[0] * 3600) + ($time[1] * 60) + (ceil($time[2]));
+            return ($time[0] * 3600) + ($time[1] * 60) + (int)$time[2];
         }
 
         return gmdate('H:i:s', mktime(0, 0, $time));

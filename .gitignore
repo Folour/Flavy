@@ -1,2 +1,4 @@
-.idea
-/vendor
+/.idea/
+/vendor/
+/composer.lock
+/clover.xml

@@ -21,21 +21,21 @@ abstract class Commands
 
     protected $_cmd = [
         'get_formats' => [
-            'regex'     => '/(?P<mux>(D\s|\sE|DE))\s(?P<format>\S{3,11})\s/',
-            'cmd'       => '%s -formats',
-            'returns'   => ['format', 'mux']
+            'regex' => '/(?P<mux>(D\s|\sE|DE))\s(?P<format>\S{3,11})\s/',
+            'cmd' => '%s -formats',
+            'returns' => ['format', 'mux']
         ],
 
         'get_encoders' => [
-            'regex'     => '/(?P<type>(A|V)).....\s(?P<format>\S{3,20})\s/',
-            'cmd'       => '%s -encoders',
-            'returns'   => ['type', 'format']
+            'regex' => '/(?P<type>(A|V)).....\s(?P<format>\S{3,20})\s/',
+            'cmd' => '%s -encoders',
+            'returns' => ['type', 'format']
         ],
 
         'get_decoders' => [
-            'regex'     => '/(?P<type>(A|V)).....\s(?P<format>\S{3,20})\s/',
-            'cmd'       => '%s -decoders',
-            'returns'   => ['type', 'format']
+            'regex' => '/(?P<type>(A|V)).....\s(?P<format>\S{3,20})\s/',
+            'cmd' => '%s -decoders',
+            'returns' => ['type', 'format']
         ],
 
         'get_file_info' => [
@@ -56,6 +56,8 @@ abstract class Commands
      *
      * @return string|bool Command output
      * @throws CmdException
+     * @throws \Symfony\Component\Process\Exception\RuntimeException
+     * @throws \Symfony\Component\Process\Exception\LogicException
      */
     protected function runCmd($cmd, $args = [])
     {
@@ -65,11 +67,11 @@ abstract class Commands
         $process = new Process(vsprintf($cmd, array_values($args)));
         $process->run();
 
-        if($process->isSuccessful()) {
+        if ($process->isSuccessful()) {
             $output = $process->getOutput();
 
-            if(isset($prop['regex'])) {
-                if(preg_match_all($prop['regex'], $output, $matches)) {
+            if (isset($prop['regex'])) {
+                if (preg_match_all($prop['regex'], $output, $matches)) {
                     return array_only($matches, $prop['returns']);
                 }
             }
