@@ -9,5 +9,4 @@
 
 namespace Folour\Flavy\Exceptions;
 
-
 class NotWritableException extends FlavyException {}

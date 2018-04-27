@@ -11,7 +11,7 @@
     }
   ],
   "require": {
-    "php": ">=5.5.9",
+    "php": "^5.6",
     "laravel/framework": ">=5.2"
   },
   "autoload": {
@@ -28,5 +28,17 @@
                 "Flavy": "Folour\\Flavy\\FlavyFacade"
             }
         }
-    }
+    },
+  "require-dev": {
+    "phpunit/phpunit": "~5.0",
+    "zendframework/zend-coding-standard": "^1.0"
+  },
+  "suggest": {
+    "ext-xdebug": "^2.6.0"
+  },
+  "scripts": {
+    "cs-check": "phpcs",
+    "cs-fix": "phpcbf",
+    "test-coverage": "phpunit --coverage-clover clover.xml"
+  }
 }

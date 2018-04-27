@@ -1,5 +1,6 @@
 # Flavy - a simple ffmpeg layer for laravel 5.2-5.4
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Folour/Flavy/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Folour/Flavy/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/Folour/Flavy/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Folour/Flavy/?branch=master)
 [![downloads](https://poser.pugx.org/folour/flavy/downloads.png)](https://packagist.org/packages/folour/flavy)
 [![license](https://poser.pugx.org/folour/flavy/license.png)](https://packagist.org/packages/folour/flavy)
 
@@ -62,4 +63,8 @@ Flavy::formats(); //return array with supported formats
 
 Flavy::canEncode('encoder'); //Check encoder support
 Flavy::canDecode('decoder'); //Check decoder support
+```
+### Develop run tests:
+```php
+composer test-coverage
 ```
